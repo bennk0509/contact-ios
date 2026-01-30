@@ -8,6 +8,7 @@
 
 import UIKit
 
+
 class FPSCounter {
     private var displayLink: CADisplayLink?
     private var lastTimestamp: TimeInterval = 0
@@ -16,7 +17,8 @@ class FPSCounter {
     private let fpsLabel: UILabel = {
         let label = UILabel()
         label.backgroundColor = .black.withAlphaComponent(0.7)
-        label.textColor = .green
+        label.textColor
+        = .green
         label.font = .systemFont(ofSize: 12, weight: .bold)
         label.textAlignment = .center
         label.frame = CGRect(x: 20, y: 50, width: 60, height: 25)
