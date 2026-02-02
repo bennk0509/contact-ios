@@ -9,10 +9,14 @@ import SwiftUI
 
 class ContactCell: UITableViewCell{
     
+    static let identifier = "ContactCell"
+        
     private let avatarContainer = UIView()
     private let avatarImageView = UIImageView()
     private let initialLabel = UILabel()
     private let nameLabel = UILabel()
+    
+    private var downloadTask: Task<Void, Never>?
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -21,20 +25,23 @@ class ContactCell: UITableViewCell{
     
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
     
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        downloadTask?.cancel()
+        avatarImageView.image = nil
+        initialLabel.text = nil
+    }
+    
     private func setupUI() {
-        // Cấu hình container hình tròn
-        avatarContainer.layer.cornerRadius = 20 // Bán kính = 1/2 chiều cao (40/2)
+        avatarContainer.layer.cornerRadius = 20
         avatarContainer.clipsToBounds = true
         
-        // Cấu hình ảnh avatar
         avatarImageView.contentMode = .scaleAspectFill
         
-        // Cấu hình chữ cái đầu (Initial)
         initialLabel.font = .systemFont(ofSize: 16, weight: .medium)
         initialLabel.textColor = .white
         initialLabel.textAlignment = .center
         
-        // Cấu hình tên
         nameLabel.font = .systemFont(ofSize: 17, weight: .regular)
         
         // Add Subviews
@@ -74,22 +81,29 @@ class ContactCell: UITableViewCell{
     }
     
     // 2. Hàm đổ dữ liệu từ Model vào Cell
-    func configure(with model: ContactModel) {
+    func configure(with model: ContactModel, imageProvider: @escaping (String) async -> Data?) {
         nameLabel.text = model.name
+        initialLabel.text = model.initial
         
-        if let image = model.avatar {
-            // CÓ ẢNH: Hiện ảnh, ẩn chữ, nền xám nhẹ
-            avatarImageView.image = image
+        let colors: [UIColor] = [.systemBlue, .systemGreen, .systemOrange, .systemPurple, .systemRed, .systemTeal, .systemPink]
+        avatarContainer.backgroundColor = colors[model.colorIndex % colors.count]
+        
+        if model.hasAvatar {
             avatarImageView.isHidden = false
             initialLabel.isHidden = true
-            avatarContainer.backgroundColor = .systemGray6
+            downloadTask = Task {
+                if let data = await imageProvider(model.id), !Task.isCancelled {
+                    self.avatarImageView.image = UIImage(data: data)
+                    self.initialLabel.isHidden = true
+                } else {
+                    self.avatarImageView.isHidden = true
+                    self.initialLabel.isHidden = false
+                }
+            }
         } else {
-            // KHÔNG CÓ ẢNH: Ẩn ảnh, hiện chữ, nền màu random
-            avatarImageView.image = nil
             avatarImageView.isHidden = true
             initialLabel.isHidden = false
-            initialLabel.text = model.initial
-            avatarContainer.backgroundColor = model.color
+            avatarImageView.image = nil
         }
     }
 }

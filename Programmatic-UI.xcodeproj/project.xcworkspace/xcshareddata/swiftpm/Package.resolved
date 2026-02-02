@@ -1,0 +1,15 @@
+{
+  "originHash" : "fe07e2057129b977121208a863aa3547c10efea8ace2823ec25642ce816f99ee",
+  "pins" : [
+    {
+      "identity" : "gdperformanceview-swift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/dani-gavrilov/GDPerformanceView-Swift",
+      "state" : {
+        "revision" : "171a656040135d667f4228c3ec82f2384770d87d",
+        "version" : "2.1.1"
+      }
+    }
+  ],
+  "version" : 3
+}

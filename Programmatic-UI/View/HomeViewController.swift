@@ -31,6 +31,7 @@ class HomeViewController: UIViewController {
         view.addSubview(startButton)
         startButton.translatesAutoresizingMaskIntoConstraints = false
         
+        
         NSLayoutConstraint.activate([
             startButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             startButton.centerYAnchor.constraint(equalTo: view.centerYAnchor),
@@ -40,9 +41,14 @@ class HomeViewController: UIViewController {
         
         startButton.addTarget(self, action: #selector(openContactList), for: .touchUpInside)
     }
-
+    
     @objc private func openContactList() {
-        let contactVC = ContactListViewController()
+        let service = ContactService.shared
+        let repository = ContactRepositoryImpl(service: service)
+        let viewModel = ContactViewModel(repository: repository)
+        
+        let contactVC = ContactListViewController(viewModel: viewModel)
+        
         navigationController?.pushViewController(contactVC, animated: true)
     }
 }

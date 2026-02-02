@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		AAD4EA252F31336300C2DB1A /* GDPerformanceView-Swift in Frameworks */ = {isa = PBXBuildFile; productRef = AAD4EA242F31336300C2DB1A /* GDPerformanceView-Swift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		AA6C0F182F26E4DE00055ACD /* Programmatic-UI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Programmatic-UI.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -36,6 +40,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AAD4EA252F31336300C2DB1A /* GDPerformanceView-Swift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -78,6 +83,7 @@
 			);
 			name = "Programmatic-UI";
 			packageProductDependencies = (
+				AAD4EA242F31336300C2DB1A /* GDPerformanceView-Swift */,
 			);
 			productName = "Programmatic-UI";
 			productReference = AA6C0F182F26E4DE00055ACD /* Programmatic-UI.app */;
@@ -107,6 +113,9 @@
 			);
 			mainGroup = AA6C0F0F2F26E4DE00055ACD;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				AAD4EA232F31336300C2DB1A /* XCRemoteSwiftPackageReference "GDPerformanceView-Swift" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = AA6C0F192F26E4DE00055ACD /* Products */;
 			projectDirPath = "";
@@ -341,6 +350,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		AAD4EA232F31336300C2DB1A /* XCRemoteSwiftPackageReference "GDPerformanceView-Swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/dani-gavrilov/GDPerformanceView-Swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.1.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		AAD4EA242F31336300C2DB1A /* GDPerformanceView-Swift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AAD4EA232F31336300C2DB1A /* XCRemoteSwiftPackageReference "GDPerformanceView-Swift" */;
+			productName = "GDPerformanceView-Swift";
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = AA6C0F102F26E4DE00055ACD /* Project object */;
 }

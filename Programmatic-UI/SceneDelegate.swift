@@ -6,6 +6,8 @@
 //
 
 import UIKit
+import GDPerformanceView_Swift
+
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
@@ -26,6 +28,14 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window?.windowScene = windowScene
         window?.rootViewController = navigationController
         window?.makeKeyAndVisible()
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            PerformanceMonitor.shared().start()
+            PerformanceMonitor.shared().show()
+        }
+        
+
+        
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {
