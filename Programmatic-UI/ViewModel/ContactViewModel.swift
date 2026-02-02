@@ -33,18 +33,19 @@ class ContactViewModel{
     
     func handlePermission() async {
         let status = ContactPermissionManager.shared.currentStatus
-        
         switch status{
         case .authorized, .limited:
             await fetchIds()
-        case .denied, .restricted:
-            onError?("Denied Access from User")
+        case .denied:
+            onError?("denied")
+        case .restricted:
+            onError?("restricted")
         case .notDetermined:
             let granted = await ContactPermissionManager.shared.request()
             if granted{
                 await fetchIds()
             } else{
-                onError?("Cant access to contacts")
+                onError?("denied")
             }
         }
     }
@@ -54,8 +55,6 @@ class ContactViewModel{
         isLoading = true
         do {
             allContactIDs = try await repository.getAllIdentifiers()
-            print("DEBUG: ViewModel nhận \(allContactIDs.count) IDs. Chuẩn bị load trang đầu.")
-            
             isLoading = false
             await loadNextPage()
         } catch {

@@ -38,7 +38,7 @@ class ContactListViewController: UIViewController {
         bindViewModel()
         
         Task {
-            await viewModel.fetchIds()
+            await viewModel.handlePermission()
         }
     }
 
