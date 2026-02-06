@@ -31,6 +31,7 @@ class ContactViewModel{
     var onDataUpdated: (() -> Void)?
     var onLoading: ((Bool) -> Void)?
     
+    
     func handlePermission() async {
         let status = ContactPermissionManager.shared.currentStatus
         switch status{
@@ -41,12 +42,16 @@ class ContactViewModel{
         case .restricted:
             onError?("restricted")
         case .notDetermined:
-            let granted = await ContactPermissionManager.shared.request()
-            if granted{
-                await fetchIds()
-            } else{
-                onError?("denied")
+            Task{
+                let granted = await ContactPermissionManager.shared.request()
+                if granted{
+
+                    
+                } else{
+                    onError?("denied")
+                }
             }
+            print("HIHI")
         }
     }
     
@@ -56,12 +61,16 @@ class ContactViewModel{
         do {
             allContactIDs = try await repository.getAllIdentifiers()
             isLoading = false
-            await loadNextPage()
+            Task{
+                await loadNextPage()
+            }
+            
         } catch {
             onError?("Cant access to contacts: \(error.localizedDescription)")
             isLoading = false
         }
     }
+
     
     func loadNextPage() async{
         guard !isLoading, hasMoreData else { return }

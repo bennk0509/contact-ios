@@ -16,7 +16,6 @@ nonisolated struct ContactModel: Hashable, Sendable {
     let initial: String
     let colorIndex: Int
     let hasAvatar: Bool
-
 }
 
 extension ContactModel {

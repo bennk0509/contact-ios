@@ -10,22 +10,42 @@ import Contacts
 
 actor ContactService {
     static let shared = ContactService()
+    
     private init(){}
     private let contactStore = CNContactStore()
     
     
-    func fetchAllContactIds() async throws -> [String]{
-        var ids: [String]  = []
-        let keys = [CNContactIdentifierKey] as [CNKeyDescriptor]
+    func fetchAllContacts() async throws -> [CNContact]{
+        var contacts: [CNContact] = []
+        let keys = [
+            CNContactIdentifierKey,
+            CNContactGivenNameKey,
+            CNContactFamilyNameKey,
+            CNContactThumbnailImageDataKey,
+            CNContactImageDataAvailableKey,
+        ] as [CNKeyDescriptor]
+        
+        
         let request = CNContactFetchRequest(keysToFetch: keys)
-        try self.contactStore.enumerateContacts(with: request){ contact, _ in
+        try self.contactStore.enumerateContacts(with: request){contact, _ in
+            contacts.append(contact)
+        }
+        return contacts
+    }
+    
+    func fetchAllContactIDs() async throws -> [String]
+    {
+        var ids: [String] = []
+        let keys = [CNContactIdentifierKey] as [CNKeyDescriptor]
+        
+        let request = CNContactFetchRequest(keysToFetch: keys)
+        try self.contactStore.enumerateContacts(with: request){ contact,_ in
             ids.append(contact.identifier)
         }
         return ids
-        
     }
     
-    func fetchContacts(by ids: [String]) async throws -> [CNContact]
+    func fetchContactById(by id: String) async throws -> CNContact
     {
         let keysToFetch = [
             CNContactIdentifierKey,
@@ -34,17 +54,8 @@ actor ContactService {
             CNContactThumbnailImageDataKey,
             CNContactImageDataAvailableKey
         ] as [CNKeyDescriptor]
-        
-        let predicate = CNContact.predicateForContacts(withIdentifiers: ids)
-        
-        return try self.contactStore.unifiedContacts(matching: predicate, keysToFetch: keysToFetch)
+        let contact = try contactStore.unifiedContact(withIdentifier: id, keysToFetch: keysToFetch)
+        return contact
     }
-    
-    
-    func fetchThumbnails(for identifier: String) throws -> Data? {
-        let keys = [CNContactThumbnailImageDataKey] as [CNKeyDescriptor]
-        let contact = try contactStore.unifiedContact(withIdentifier: identifier, keysToFetch: keys)
-        return contact.thumbnailImageData
-    }
-    
+
 }
