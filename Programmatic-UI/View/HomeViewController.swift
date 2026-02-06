@@ -43,12 +43,12 @@ class HomeViewController: UIViewController {
     }
     
     @objc private func openContactList() {
-        let service = ContactService.shared
-        let repository = ContactRepositoryImpl(service: service)
-        let viewModel = ContactViewModel(repository: repository)
-        
-        let contactVC = ContactListViewController(viewModel: viewModel)
-        
-        navigationController?.pushViewController(contactVC, animated: true)
+//        let service = ContactService.shared
+//        let repository = ContactRepositoryImpl(service: service)
+//        let viewModel = ContactViewModel(repository: repository)
+//        
+//        let contactVC = ContactListViewController(viewModel: viewModel)
+//        
+//        navigationController?.pushViewController(contactVC, animated: true)
     }
 }

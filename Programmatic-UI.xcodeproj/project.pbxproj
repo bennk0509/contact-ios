@@ -7,10 +7,22 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AA3F0A132F36598400F307A9 /* AsyncAlgorithms in Frameworks */ = {isa = PBXBuildFile; productRef = AA3F0A122F36598400F307A9 /* AsyncAlgorithms */; };
 		AAD4EA252F31336300C2DB1A /* GDPerformanceView-Swift in Frameworks */ = {isa = PBXBuildFile; productRef = AAD4EA242F31336300C2DB1A /* GDPerformanceView-Swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		AA3F0A1C2F365A9E00F307A9 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AA6C0F102F26E4DE00055ACD /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AA6C0F172F26E4DE00055ACD;
+			remoteInfo = "Programmatic-UI";
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
+		AA3F0A182F365A9E00F307A9 /* Programmatic-UITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Programmatic-UITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA6C0F182F26E4DE00055ACD /* Programmatic-UI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Programmatic-UI.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -25,6 +37,11 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		AA3F0A192F365A9E00F307A9 /* Programmatic-UITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "Programmatic-UITests";
+			sourceTree = "<group>";
+		};
 		AA6C0F1A2F26E4DE00055ACD /* Programmatic-UI */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -36,11 +53,19 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		AA3F0A152F365A9E00F307A9 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		AA6C0F152F26E4DE00055ACD /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				AAD4EA252F31336300C2DB1A /* GDPerformanceView-Swift in Frameworks */,
+				AA3F0A132F36598400F307A9 /* AsyncAlgorithms in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -51,6 +76,7 @@
 			isa = PBXGroup;
 			children = (
 				AA6C0F1A2F26E4DE00055ACD /* Programmatic-UI */,
+				AA3F0A192F365A9E00F307A9 /* Programmatic-UITests */,
 				AA6C0F192F26E4DE00055ACD /* Products */,
 			);
 			sourceTree = "<group>";
@@ -59,6 +85,7 @@
 			isa = PBXGroup;
 			children = (
 				AA6C0F182F26E4DE00055ACD /* Programmatic-UI.app */,
+				AA3F0A182F365A9E00F307A9 /* Programmatic-UITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -66,6 +93,29 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		AA3F0A172F365A9E00F307A9 /* Programmatic-UITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AA3F0A1E2F365A9E00F307A9 /* Build configuration list for PBXNativeTarget "Programmatic-UITests" */;
+			buildPhases = (
+				AA3F0A142F365A9E00F307A9 /* Sources */,
+				AA3F0A152F365A9E00F307A9 /* Frameworks */,
+				AA3F0A162F365A9E00F307A9 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				AA3F0A1D2F365A9E00F307A9 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				AA3F0A192F365A9E00F307A9 /* Programmatic-UITests */,
+			);
+			name = "Programmatic-UITests";
+			packageProductDependencies = (
+			);
+			productName = "Programmatic-UITests";
+			productReference = AA3F0A182F365A9E00F307A9 /* Programmatic-UITests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		AA6C0F172F26E4DE00055ACD /* Programmatic-UI */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = AA6C0F2B2F26E4DF00055ACD /* Build configuration list for PBXNativeTarget "Programmatic-UI" */;
@@ -84,6 +134,7 @@
 			name = "Programmatic-UI";
 			packageProductDependencies = (
 				AAD4EA242F31336300C2DB1A /* GDPerformanceView-Swift */,
+				AA3F0A122F36598400F307A9 /* AsyncAlgorithms */,
 			);
 			productName = "Programmatic-UI";
 			productReference = AA6C0F182F26E4DE00055ACD /* Programmatic-UI.app */;
@@ -99,6 +150,10 @@
 				LastSwiftUpdateCheck = 2600;
 				LastUpgradeCheck = 2600;
 				TargetAttributes = {
+					AA3F0A172F365A9E00F307A9 = {
+						CreatedOnToolsVersion = 26.0;
+						TestTargetID = AA6C0F172F26E4DE00055ACD;
+					};
 					AA6C0F172F26E4DE00055ACD = {
 						CreatedOnToolsVersion = 26.0;
 					};
@@ -115,6 +170,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				AAD4EA232F31336300C2DB1A /* XCRemoteSwiftPackageReference "GDPerformanceView-Swift" */,
+				AA3F0A112F36598400F307A9 /* XCRemoteSwiftPackageReference "swift-async-algorithms" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = AA6C0F192F26E4DE00055ACD /* Products */;
@@ -122,11 +178,19 @@
 			projectRoot = "";
 			targets = (
 				AA6C0F172F26E4DE00055ACD /* Programmatic-UI */,
+				AA3F0A172F365A9E00F307A9 /* Programmatic-UITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		AA3F0A162F365A9E00F307A9 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		AA6C0F162F26E4DE00055ACD /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -137,6 +201,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		AA3F0A142F365A9E00F307A9 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		AA6C0F142F26E4DE00055ACD /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -146,7 +217,57 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		AA3F0A1D2F365A9E00F307A9 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AA6C0F172F26E4DE00055ACD /* Programmatic-UI */;
+			targetProxy = AA3F0A1C2F365A9E00F307A9 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		AA3F0A1F2F365A9E00F307A9 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.khanh.Programmatic-UITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Programmatic-UI.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Programmatic-UI";
+			};
+			name = Debug;
+		};
+		AA3F0A202F365A9E00F307A9 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.khanh.Programmatic-UITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Programmatic-UI.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Programmatic-UI";
+			};
+			name = Release;
+		};
 		AA6C0F2C2F26E4DF00055ACD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -331,6 +452,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		AA3F0A1E2F365A9E00F307A9 /* Build configuration list for PBXNativeTarget "Programmatic-UITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA3F0A1F2F365A9E00F307A9 /* Debug */,
+				AA3F0A202F365A9E00F307A9 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		AA6C0F132F26E4DE00055ACD /* Build configuration list for PBXProject "Programmatic-UI" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -352,6 +482,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		AA3F0A112F36598400F307A9 /* XCRemoteSwiftPackageReference "swift-async-algorithms" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-async-algorithms.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.1.1;
+			};
+		};
 		AAD4EA232F31336300C2DB1A /* XCRemoteSwiftPackageReference "GDPerformanceView-Swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/dani-gavrilov/GDPerformanceView-Swift";
@@ -363,6 +501,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		AA3F0A122F36598400F307A9 /* AsyncAlgorithms */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AA3F0A112F36598400F307A9 /* XCRemoteSwiftPackageReference "swift-async-algorithms" */;
+			productName = AsyncAlgorithms;
+		};
 		AAD4EA242F31336300C2DB1A /* GDPerformanceView-Swift */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = AAD4EA232F31336300C2DB1A /* XCRemoteSwiftPackageReference "GDPerformanceView-Swift" */;

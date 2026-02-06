@@ -8,10 +8,16 @@
 import UIKit
 import Contacts
 
-actor ContactService {
-    static let shared = ContactService()
-    
-    private init(){}
+protocol ContactService: Sendable {
+    func fetchAllContacts() async throws -> [CNContact]
+    func fetchAllContactIDs() async throws -> [String]
+    func fetchContactById(by id: String) async throws -> CNContact
+}
+
+actor ContactServiceImpl: ContactService {
+//    static let shared = ContactService()
+//    
+//    private init(){}
     private let contactStore = CNContactStore()
     
     
