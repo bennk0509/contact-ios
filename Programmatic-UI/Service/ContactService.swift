@@ -14,7 +14,7 @@ protocol ContactService: Sendable {
     func fetchContactById(by id: String) async throws -> CNContact
 }
 
-actor ContactServiceImpl: ContactService {
+final class ContactServiceImpl: ContactService {
 //    static let shared = ContactService()
 //    
 //    private init(){}
@@ -28,7 +28,7 @@ actor ContactServiceImpl: ContactService {
             CNContactGivenNameKey,
             CNContactFamilyNameKey,
             CNContactThumbnailImageDataKey,
-            CNContactImageDataAvailableKey,
+            CNContactThumbnailImageDataKey,
         ] as [CNKeyDescriptor]
         
         

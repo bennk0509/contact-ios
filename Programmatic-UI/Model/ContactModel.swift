@@ -10,16 +10,16 @@
 import Foundation
 import Contacts
 
-nonisolated struct ContactModel: Hashable, Sendable {
+struct ContactModel: Hashable, Sendable {
     let id: String
     let name: String
     let initial: String
     let colorIndex: Int
-    let hasAvatar: Bool
+    let avatarData: Data?
 }
 
 extension ContactModel {
-    init(from contact: CNContact) {
+    nonisolated init(from contact: CNContact) {
         let fName = contact.givenName
         let lName = contact.familyName
         
@@ -31,8 +31,8 @@ extension ContactModel {
         let combinedInitial = "\(firstLetter)\(lastLetter)".trimmingCharacters(in: .whitespaces)
 
         self.initial = combinedInitial.isEmpty ? String(self.name.prefix(1)).uppercased() : combinedInitial.uppercased()
-        self.hasAvatar = contact.imageDataAvailable
         
+        self.avatarData = contact.thumbnailImageData
         self.colorIndex = abs(contact.identifier.hashValue)
     }
 }
