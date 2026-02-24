@@ -16,11 +16,33 @@ final class ContactListViewModel{
     init(repository: ContactRepository) {
         self.repository = repository
     }
+    
+    private(set) var permissionStatus: PermissionStatus = .notDetermined
     private(set) var contacts: [ContactModel] = []
     private var contactIDs: [String] = []
     private(set) var isLoadingMore: Bool = false
-    
-    func loadInitialData() async throws {
+    func loadInitialData() async throws{
+        let status = ContactPermissionManager.shared.currentStatus
+        self.permissionStatus = status
+        
+        switch status {
+        case .authorized:
+            try await loadData()
+        case .notDetermined:
+            let granted = await ContactPermissionManager.shared.request()
+            if granted {
+                self.permissionStatus = .authorized
+                try await loadData()
+            } else {
+                self.permissionStatus = .denied
+            }
+        case .denied, .restricted:
+            return
+        case .limited:
+            try await loadData()
+        }
+    }
+    func loadData() async throws {
         do{
             self.contacts = []
             self.contactIDs = []
@@ -49,7 +71,8 @@ final class ContactListViewModel{
         } catch{
             throw error
         }
-        
     }
+    
+    
 }
 

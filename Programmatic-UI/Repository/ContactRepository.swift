@@ -24,67 +24,35 @@ actor ContactRepositoryImpl: ContactRepository{
     
     private var contactsById: [String: ContactModel] = [:]
     private var orderedIds: [String] = []
-    private var fetchAllTask: Task<[ContactModel], Error>?
-    
-    private var fetchTask: Task<ContactModel,Error>?
-    
+
     
     func fetchAllContacts() async throws -> [ContactModel] {
-        //Nếu N thằng fetch cùng lúc thì sẽ fetch N lần.
         if(!orderedIds.isEmpty)
         {
             return orderedIds.compactMap { contactsById[$0]}
         }
+
+        let data = try await contactService.fetchAllContacts()
+        let models = data.map { ContactModel(from: $0) }
+        self.contactsById = Dictionary(uniqueKeysWithValues: models.map { ($0.id, $0) })
+        self.orderedIds = models.map { $0.id }
         
-        if let task = fetchAllTask{
-            return try await task.value
-        }
-        
-        let task = Task{
-            let data = try await contactService.fetchAllContacts()
-            return data.map{
-                ContactModel(from: $0)
-            }
-        }
-        
-        self.fetchAllTask  = task
-        do {
-            let contacts = try await task.value
-            self.orderedIds = contacts.map { $0.id }
-            self.contactsById = Dictionary(uniqueKeysWithValues: contacts.map { ($0.id, $0) })
-            
-            self.fetchAllTask = nil
-            return contacts
-        } catch{
-            throw error
-        }
+        return models
     }
     
     func fetchContactById(id: String) async throws -> ContactModel {
         if let contact = contactsById[id] {
             return contact
         }
+
+        let data = try await contactService.fetchContactById(by: id)
+        let contact = ContactModel(from: data)
         
-        if let task = fetchTask{
-            return try await task.value
+        self.contactsById[id] = contact
+        if !orderedIds.contains(id){
+            self.orderedIds.append(id)
         }
-        
-        let task = Task{
-            let data = try await contactService.fetchContactById(by: id)
-            return ContactModel(from: data)
-        }
-        self.fetchTask = task
-        
-        do{
-            let contact = try await task.value
-            self.contactsById[id] = contact
-            if !orderedIds.contains(id){
-                self.orderedIds.append(id)
-            }
-            return contact
-        } catch{
-            throw error
-        }
+        return contact
     }
     
     func getOrderIds() async throws -> [String]
@@ -95,7 +63,6 @@ actor ContactRepositoryImpl: ContactRepository{
     func getContacts(for ids: [String]) async throws -> [ContactModel] {
         return ids.compactMap { contactsById[$0]}
     }
-    
 }
 //    
 //    func fetchContact(id: String) async throws -> ContactModel {

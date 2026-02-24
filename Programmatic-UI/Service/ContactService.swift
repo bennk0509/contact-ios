@@ -10,58 +10,77 @@ import Contacts
 
 protocol ContactService: Sendable {
     func fetchAllContacts() async throws -> [CNContact]
-    func fetchAllContactIDs() async throws -> [String]
     func fetchContactById(by id: String) async throws -> CNContact
 }
 
-final class ContactServiceImpl: ContactService {
-//    static let shared = ContactService()
-//    
-//    private init(){}
+actor ContactServiceImpl: ContactService {
     private let contactStore = CNContactStore()
+    
+    private var fetchAllTask: Task<[CNContact], Error>?
+    private var fetchTask: [String: Task<CNContact,Error>] = [:]
     
     
     func fetchAllContacts() async throws -> [CNContact]{
-        var contacts: [CNContact] = []
-        let keys = [
-            CNContactIdentifierKey,
-            CNContactGivenNameKey,
-            CNContactFamilyNameKey,
-            CNContactThumbnailImageDataKey,
-            CNContactThumbnailImageDataKey,
-        ] as [CNKeyDescriptor]
-        
-        
-        let request = CNContactFetchRequest(keysToFetch: keys)
-        try self.contactStore.enumerateContacts(with: request){contact, _ in
-            contacts.append(contact)
+        if let task = fetchAllTask{
+            return try await task.value
         }
-        return contacts
-    }
-    
-    func fetchAllContactIDs() async throws -> [String]
-    {
-        var ids: [String] = []
-        let keys = [CNContactIdentifierKey] as [CNKeyDescriptor]
         
-        let request = CNContactFetchRequest(keysToFetch: keys)
-        try self.contactStore.enumerateContacts(with: request){ contact,_ in
-            ids.append(contact.identifier)
+        let newTask = Task<[CNContact], Error>{
+            var contacts: [CNContact] = []
+            let keys = [
+                CNContactIdentifierKey,
+                CNContactGivenNameKey,
+                CNContactFamilyNameKey,
+                CNContactThumbnailImageDataKey,
+                CNContactThumbnailImageDataKey,
+            ] as [CNKeyDescriptor]
+            let request = CNContactFetchRequest(keysToFetch: keys)
+            try self.contactStore.enumerateContacts(with: request){contact, _ in
+                contacts.append(contact)
+            }
+            return contacts
         }
-        return ids
+        
+        
+        self.fetchAllTask = newTask
+        do {
+            let result = try await newTask.value
+            self.fetchAllTask = nil
+            return result
+        } catch {
+            self.fetchAllTask = nil
+            throw error
+        }
+        
     }
-    
+
     func fetchContactById(by id: String) async throws -> CNContact
     {
-        let keysToFetch = [
-            CNContactIdentifierKey,
-            CNContactGivenNameKey,
-            CNContactFamilyNameKey,
-            CNContactThumbnailImageDataKey,
-            CNContactImageDataAvailableKey
-        ] as [CNKeyDescriptor]
-        let contact = try contactStore.unifiedContact(withIdentifier: id, keysToFetch: keysToFetch)
-        return contact
+        if let task = fetchTask[id]{
+            return try await task.value
+        }
+        let newTask = Task{
+            let keysToFetch = [
+                CNContactIdentifierKey,
+                CNContactGivenNameKey,
+                CNContactFamilyNameKey,
+                CNContactThumbnailImageDataKey,
+                CNContactImageDataAvailableKey
+            ] as [CNKeyDescriptor]
+            let contact = try contactStore.unifiedContact(withIdentifier: id, keysToFetch: keysToFetch)
+            return contact
+        }
+        
+        self.fetchTask[id] = newTask
+        do {
+            let result = try await newTask.value
+            self.fetchTask[id] = nil
+            return result
+        } catch{
+            self.fetchTask[id] = nil
+            throw error
+        }        
+        
     }
 
 }

@@ -14,40 +14,10 @@
             filePath = "Programmatic-UI/ViewModel/ContactViewModel.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "35"
-            endingLineNumber = "35"
+            startingLineNumber = "57"
+            endingLineNumber = "57"
             landmarkName = "loadNextPage()"
             landmarkType = "7">
-            <Locations>
-               <Location
-                  uuid = "D9098917-5031-49D6-BB46-9F8CB07C4A86 - c32ffcc031222ea1"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "Programmatic_UI.ContactListViewModel.loadNextPage() async throws -&gt; ()"
-                  moduleName = "Programmatic-UI.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/nkak0509/Projects/Programmatic-UI/Programmatic-UI/ViewModel/ContactViewModel.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "35"
-                  endingLineNumber = "35">
-               </Location>
-               <Location
-                  uuid = "D9098917-5031-49D6-BB46-9F8CB07C4A86 - f73a065d221ab500"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "(1) suspend resume partial function for Programmatic_UI.ContactListViewModel.loadNextPage() async throws -&gt; ()"
-                  moduleName = "Programmatic-UI.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/nkak0509/Projects/Programmatic-UI/Programmatic-UI/ViewModel/ContactViewModel.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "35"
-                  endingLineNumber = "35">
-               </Location>
-            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

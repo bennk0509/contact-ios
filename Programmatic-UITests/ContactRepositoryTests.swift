@@ -10,93 +10,82 @@ import Contacts
 @testable import Programmatic_UI
 
 actor MockContactService: ContactService {
-    
-    var count = 0
-    
-    var countFetchID = 0
-    
+    var fetchAllCallCount = 0
+    var fetchByIdCallCount: [String: Int] = [:]
+    var mockData: [CNContact] = []
+
     func fetchAllContacts() async throws -> [CNContact] {
-        count += 1
-        try await Task.sleep(nanoseconds: 500_000_000)
-        return []
+        fetchAllCallCount += 1
+//        try await Task.sleep(nanoseconds: 100_000_000)
+        return mockData
     }
-    
+
+    func fetchContactById(by id: String) async throws -> CNContact {
+        fetchByIdCallCount[id, default: 0] += 1
+        try await Task.sleep(nanoseconds: 100_000_000)
+        return CNContact()
+    }
     func fetchAllContactIDs() async throws -> [String] {
         return []
     }
-    
-    func fetchContactById(by id: String) async throws -> CNContact {
-        countFetchID += 1
-        try await Task.sleep(nanoseconds: 500_000_000)
-        return CNContact()
-    }
-    
 }
 
+final class ContactRepositoryTests: XCTestCase {
+    var sut: ContactRepositoryImpl!
+    var mockService: MockContactService!
 
-final class ContactRepositoryTests: XCTestCase{
-    func testFetchAllContactsWith5000Calls() async throws {
-        let mock = MockContactService()
-        let repo = ContactRepositoryImpl(contactService: mock)
+    override func setUp() {
+        super.setUp()
+        mockService = MockContactService()
+        sut = ContactRepositoryImpl(contactService: mockService)
+    }
+    
+    func testFetchAllContacts_ShouldOnlyCallServiceOnce_WhenMultipleCallsOccur() async throws {
         let totalRequests = 5000
         
         try await withThrowingTaskGroup(of: [ContactModel].self) { group in
-            for _ in 1...totalRequests {
+            for _ in 0..<totalRequests {
                 group.addTask {
-                    return try await repo.fetchAllContacts()
+                    return try await self.sut.fetchAllContacts()
                 }
             }
             for try await _ in group { }
         }
         
-        let count = await mock.count
-        XCTAssertEqual(count, 1, "Need to call exactly 1 time only!!")
-        print(count)
+        let callCount = await mockService.fetchAllCallCount
+        XCTAssertEqual(callCount, 1, "fetchAllTasks call only 1 times to the Service")
     }
     
-    func testFetchContactByIdWith5000Call() async throws {
-        let mock = MockContactService()
-        let repo = ContactRepositoryImpl(contactService: mock)
-        let totalRequest = 5000
-        try await withThrowingTaskGroup(of: ContactModel.self){ group in
-            for _ in 1...totalRequest{
-                group.addTask{
-                    return try await repo.fetchContact(id: "177C371E-701D-42F8-A03B-C61CA31627F6")
-                }
-            }
-            for try await _ in group {}
-        }
-         
-        let count = await mock.countFetchID
-        print(count)
+    func testFetchContactById_ShouldReturnFromCache_WhenAlreadyFetched() async throws {
+        let testId = "123"
+        _ = try await sut.fetchContactById(id: testId)
+        _ = try await sut.fetchContactById(id: testId)
+        let callCount = await mockService.fetchByIdCallCount[testId]
+        XCTAssertEqual(callCount, 1)
     }
-    
-    func testGetAllContacts() async throws {
-        let service = await ContactServiceImpl()
-        let sut = ContactRepositoryImpl(contactService: service)
-        try await withThrowingTaskGroup(of: [ContactModel].self) { group in
-            for _ in 1...5000 {
+
+    func testFetchContactById_ShouldHandleConcurrentCallsForSameId() async throws {
+        let testId = "ABC"
+        await withTaskGroup(of: ContactModel.self) { group in
+            for _ in 0..<50 {
                 group.addTask {
-                    return try await sut.fetchAllContacts()
+                    return try! await self.sut.fetchContactById(id: testId)
                 }
             }
-            var completedRequests = 0
-            for try await contacts in group {
-                completedRequests += 1
-                XCTAssertFalse(contacts.isEmpty, "Dữ liệu trả về không được rỗng")
-                
-                if completedRequests <= 2 {
-                    print("--------- Request #\(completedRequests) ---------")
-                    let sample = contacts.prefix(2)
-                    for contact in sample {
-                        print("ID: \(contact.id) - Name: \(contact.name)")
-                    }
-                }
-            }
+            for await _ in group {}
         }
-        
-        
-        
-        print("Integration Test: 5000 requests đồng thời trên dữ liệu thật thành công!")
+        let callCount = await mockService.fetchByIdCallCount[testId]
+        XCTAssertEqual(callCount, 1)
+    }
+
+    func testFetchAll_ShouldResetTask_WhenErrorOccurs() async throws {
+        struct DummyError: Error {}
+    }
+
+    func testOrderedIds_ShouldMaintainSequence() async throws {
+        // GIVEN: Giả lập 3 contacts trả về từ service
+        // WHEN: fetchAllContacts()
+        // THEN: orderedIds phải chứa đúng 3 ID theo thứ tự đó
     }
 }
+

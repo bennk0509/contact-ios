@@ -67,19 +67,17 @@ class ContactListViewController: UIViewController {
 }
 extension ContactListViewController: UITableViewDataSource{
     
-    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return viewModel.contacts.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: ContactCell.identifier, for: indexPath) as! ContactCell
+        
         let contact = viewModel.contacts[indexPath.row]
         cell.configure(with: contact)
         return cell
     }
-    
-    
 }
 
 extension ContactListViewController: UITableViewDelegate{
@@ -87,10 +85,8 @@ extension ContactListViewController: UITableViewDelegate{
         let lastItem = viewModel.contacts.count - 10
         
         if indexPath.row == lastItem {
-//            tableView.tableFooterView = createSpinnerFooter()
             Task {
                 try await viewModel.loadNextPage()
-//                tableView.tableFooterView = nil
                 tableView.reloadData()
                 
             }
