@@ -54,8 +54,8 @@ final class ContactListViewModel{
         }
     }
     
-    func loadNextPage() async throws{
-        guard !isLoadingMore, contacts.count < contactIDs.count else {return}
+    func loadNextPage() async throws -> Int{
+        guard !isLoadingMore, contacts.count < contactIDs.count else {return 0}
         
         isLoadingMore = true
         
@@ -68,6 +68,7 @@ final class ContactListViewModel{
         do{
             let newContacts = try await repository.getContacts(for: nextIDs)
             self.contacts.append(contentsOf: newContacts)
+            return newContacts.count
         } catch{
             throw error
         }

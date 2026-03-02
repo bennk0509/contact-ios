@@ -82,13 +82,21 @@ extension ContactListViewController: UITableViewDataSource{
 
 extension ContactListViewController: UITableViewDelegate{
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        let lastItem = viewModel.contacts.count - 10
+        let threshold = viewModel.contacts.count - 1
         
-        if indexPath.row == lastItem {
-            Task {
-                try await viewModel.loadNextPage()
-                tableView.reloadData()
-                
+        if indexPath.row == threshold {
+            Task{
+                let currentTotalRows = viewModel.contacts.count
+                do{
+                    let newContactCount = try await viewModel.loadNextPage()
+                    if (newContactCount > 0){
+                        let range = currentTotalRows..<(currentTotalRows+newContactCount)
+                        let pathList = range.map{
+                            IndexPath(row: $0, section: 0)
+                        }
+                        tableView.insertRows(at: pathList, with: .fade)
+                    }
+                }
             }
         }
     }
