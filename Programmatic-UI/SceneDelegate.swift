@@ -21,7 +21,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         guard let windowScene = (scene as? UIWindowScene) else { return }
         
 //        let navigationController = UINavigationController(rootViewController: ContactListViewController(viewModel: ContactListViewModel(repository: ContactRepositoryImpl(contactService: ContactServiceImpl()))))
-        let navigationController = UINavigationController(rootViewController: ContactCollectionViewController(viewModel: ContactListViewModel(repository: ContactRepositoryImpl(contactService: ContactServiceImpl()))))
+        let navigationController = UINavigationController(rootViewController: ContactListViewController(viewModel: ContactListViewModel(repository: ContactRepositoryImpl(contactService: ContactServiceImpl()))))
         
         
         window = UIWindow(frame: windowScene.coordinateSpace.bounds)

@@ -111,4 +111,15 @@ extension ContactListViewController: UITableViewDelegate{
             }
         }
     }
+    
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        guard indexPath.item < viewModel.contacts.count else { return }
+        
+        let selectedContact = viewModel.contacts[indexPath.item]
+        let suggestions = Array(viewModel.contacts.prefix(10))
+        
+        let detailVC = ContactDetailViewController(contact: selectedContact, suggested: suggestions)
+        navigationController?.pushViewController(detailVC, animated: true)
+    }
 }
