@@ -67,15 +67,12 @@ class ContactCell: UITableViewCell{
         let cacheId = model.id
         avatarImageView.image = UIImage(systemName: "person.crop.circle.fill")
         avatarImageView.tintColor = .systemGray3
-        print("Before Task: \(cacheId)")
         imageLoadingTask = Task {
             await bindingImage(model: model)
         }
-        print("After Task")
     }
     
     func bindingImage(model: ContactModel) async {
-        print("During Task \(model.id)")
         let cacheId = model.id
         if let cached = await ImageCacheManager.shared.getCachedImage(for: cacheId) {
             self.avatarImageView.image = cached
@@ -84,7 +81,6 @@ class ContactCell: UITableViewCell{
         guard let data = model.avatarData else { return }
         if let decoded = UIImage(data: data) {
             await ImageCacheManager.shared.cacheImage(decoded, for: cacheId)
-            
             if Task.isCancelled { return }
             self.avatarImageView.image = decoded
         }

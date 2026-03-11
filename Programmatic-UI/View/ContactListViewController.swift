@@ -37,6 +37,7 @@ class ContactListViewController: UIViewController {
         tableView.dataSource = self
         tableView.delegate = self
         tableView.register(ContactCell.self, forCellReuseIdentifier: ContactCell.identifier)
+        tableView.register(LoadingCell.self, forCellReuseIdentifier: LoadingCell.identifier)
         tableView.rowHeight = 60
         tableView.translatesAutoresizingMaskIntoConstraints = false
         
@@ -54,49 +55,59 @@ class ContactListViewController: UIViewController {
             tableView.reloadData()
         }
     }
-    
-    private func createSpinnerFooter() -> UIView {
-        let footerView = UIView(frame: CGRect(x: 0, y: 0, width: view.frame.size.width, height: 100))
-        let spinner = UIActivityIndicatorView()
-        spinner.center = footerView.center
-        footerView.addSubview(spinner)
-        spinner.startAnimating()
-        return footerView
-    }
-    
 }
 extension ContactListViewController: UITableViewDataSource{
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return viewModel.contacts.count
+        return viewModel.isLoading == .loading ? viewModel.contacts.count + 1 : viewModel.contacts.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: ContactCell.identifier, for: indexPath) as! ContactCell
+        if (indexPath.row == viewModel.contacts.count){
+            let cell = tableView.dequeueReusableCell(withIdentifier: LoadingCell.identifier, for: indexPath) as! LoadingCell
+            cell.start()
+            return cell
+        }
         
+        let cell = tableView.dequeueReusableCell(withIdentifier: ContactCell.identifier, for: indexPath) as! ContactCell
         let contact = viewModel.contacts[indexPath.row]
         cell.configure(with: contact)
+        
         return cell
     }
 }
 
 extension ContactListViewController: UITableViewDelegate{
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        let threshold = viewModel.contacts.count - 1
+        let threshold = viewModel.contacts.count - 5
+        guard indexPath.row == threshold, viewModel.isLoading == .rest else {return}
         
-        if indexPath.row == threshold {
-            Task{
-                let currentTotalRows = viewModel.contacts.count
-                do{
-                    let newContactCount = try await viewModel.loadNextPage()
-                    if (newContactCount > 0){
-                        let range = currentTotalRows..<(currentTotalRows+newContactCount)
-                        let pathList = range.map{
-                            IndexPath(row: $0, section: 0)
-                        }
+        Task{
+            let currentCount = viewModel.contacts.count
+            viewModel.setLoadingState(loadingState: .loading)
+            tableView.performBatchUpdates {
+                tableView.insertRows(at: [IndexPath(row: currentCount, section: 0)], with: .none)
+            }
+            do {
+                let newContacts = try await viewModel.loadNextPage()
+                
+                if !newContacts.isEmpty {
+                    let range = currentCount..<(currentCount + newContacts.count)
+                    let pathList = range.map { IndexPath(row: $0, section: 0) }
+                    let loadingPath = IndexPath(row: currentCount, section: 0)
+                    
+                    tableView.performBatchUpdates({
+                        tableView.deleteRows(at: [loadingPath], with: .fade)
+                        viewModel.appendContacts(newContacts)
                         tableView.insertRows(at: pathList, with: .fade)
-                    }
+                    })
+                } else {
+                    viewModel.resetLoadingState()
+                    tableView.reloadData()
                 }
+            } catch {
+                viewModel.resetLoadingState()
+                print("Error loading data: \(error)")
             }
         }
     }

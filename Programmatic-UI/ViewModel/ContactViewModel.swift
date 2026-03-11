@@ -8,19 +8,31 @@
 
 import Foundation
 
+enum LoadingState{
+    case rest
+    case loading
+    case error
+}
+
+
 
 @MainActor
 final class ContactListViewModel{
-    
+    //
     private let repository: ContactRepository
+    
+    private(set) var permissionStatus: PermissionStatus = .notDetermined
+    private(set) var contacts: [ContactModel] = []
+    private(set) var isLoading: LoadingState = .rest
+    
+    private var contactIDs: [String] = []
+    
+    //Constructor HERE
     init(repository: ContactRepository) {
         self.repository = repository
     }
     
-    private(set) var permissionStatus: PermissionStatus = .notDetermined
-    private(set) var contacts: [ContactModel] = []
-    private var contactIDs: [String] = []
-    private(set) var isLoadingMore: Bool = false
+    //FUNC HERE
     func loadInitialData() async throws{
         let status = ContactPermissionManager.shared.currentStatus
         self.permissionStatus = status
@@ -43,37 +55,59 @@ final class ContactListViewModel{
         }
     }
     func loadData() async throws {
-        do{
+        isLoading = .loading
+        defer { isLoading = .rest }
+        
+        do {
             self.contacts = []
             self.contactIDs = []
+            
             _ = try await repository.fetchAllContacts()
             self.contactIDs = try await repository.getOrderIds()
-            self.contacts = try await repository.getContacts(for: Array(contactIDs.prefix(50)))
-        } catch{
+            
+            let firstPageIDs = Array(contactIDs.prefix(50))
+            self.contacts = try await repository.getContacts(for: firstPageIDs)
+        } catch {
+            isLoading = .error
             throw error
         }
     }
     
-    func loadNextPage() async throws -> Int{
-        guard !isLoadingMore, contacts.count < contactIDs.count else {return 0}
-        
-        isLoadingMore = true
-        
-        defer { isLoadingMore = false }
+    func loadNextPage() async throws -> [ContactModel] {
+        guard contacts.count < contactIDs.count else {
+            return []
+        }
+    
+        defer {
+            if isLoading == .loading { isLoading = .rest }
+        }
         
         let start = contacts.count
         let end = min(start + 50, contactIDs.count)
         let nextIDs = Array(contactIDs[start..<end])
         
-        do{
-            let newContacts = try await repository.getContacts(for: nextIDs)
-            self.contacts.append(contentsOf: newContacts)
-            return newContacts.count
-        } catch{
+        do {
+            try await Task.sleep(nanoseconds: 500_000_000)
+            return try await repository.getContacts(for: nextIDs)
+        } catch {
+            isLoading = .error
             throw error
         }
     }
     
+    func setLoadingState(loadingState: LoadingState)
+    {
+        self.isLoading = loadingState
+    }
+    
+    func resetLoadingState(){
+        self.isLoading = .rest
+    }
+    
+    func appendContacts(_ newContacts: [ContactModel]){
+        self.contacts.append(contentsOf: newContacts)
+        self.isLoading = .rest
+    }
     
 }
 
