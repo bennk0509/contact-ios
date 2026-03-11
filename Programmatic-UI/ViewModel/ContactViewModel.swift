@@ -87,7 +87,7 @@ final class ContactListViewModel{
         let nextIDs = Array(contactIDs[start..<end])
         
         do {
-            try await Task.sleep(nanoseconds: 500_000_000)
+            try await Task.sleep(nanoseconds: 5_000_000_000)
             return try await repository.getContacts(for: nextIDs)
         } catch {
             isLoading = .error
