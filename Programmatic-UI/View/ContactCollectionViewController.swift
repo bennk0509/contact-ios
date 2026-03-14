@@ -10,23 +10,20 @@ import UIKit
 
 class ContactCollectionViewController: UIViewController {
     
-    private let viewModel: ContactListViewModel
-    private lazy var collectionView: UICollectionView = {
-        let layout = LeftAlignedFlowLayout()
-        layout.scrollDirection = .vertical
+    private var viewModel: ContactListViewModel
+    private var viewCollection: UICollectionView = {
+        let layout = UICollectionViewFlowLayout()
+    
+        layout.sectionInset = UIEdgeInsets(top: 20, left: 10, bottom: 20, right: 10)
         
-        //SPACING BETWEEN ROW
+        layout.minimumInteritemSpacing = 10
         layout.minimumLineSpacing = 10
         
-        //SPACING BETWEEN HORIZONTAL
-        layout.minimumInteritemSpacing = 10
-        
-        //PADING OF WHOLE COLLECTION VIEW
-        layout.sectionInset = UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
-        
         let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
-        cv.backgroundColor = .systemBackground
-        cv.translatesAutoresizingMaskIntoConstraints = false
+        
+        cv.register(ContactCollectionCell.self, forCellWithReuseIdentifier: ContactCollectionCell.identifier)
+        cv.register(LoadingCollectionCell.self, forCellWithReuseIdentifier: LoadingCollectionCell.identifier)
+        
         return cv
     }()
     
@@ -41,34 +38,31 @@ class ContactCollectionViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "Contacts"
-        view.backgroundColor = .systemBackground
-        setUpCollectionView()
         loadData()
-        
+        setUpUI()
     }
     
-    private func setUpCollectionView(){
-        view.addSubview(collectionView)
-        collectionView.delegate = self
-        collectionView.dataSource = self
+    
+    func setUpUI(){
+        viewCollection.translatesAutoresizingMaskIntoConstraints = false
         
-        collectionView.register(ContactCollectionCell.self, forCellWithReuseIdentifier: ContactCollectionCell.identifier)
-        
-        collectionView.register(LoadingCollectionCell.self, forCellWithReuseIdentifier: LoadingCollectionCell.identifier)
+        view.addSubview(viewCollection)
         
         NSLayoutConstraint.activate([
-            collectionView.topAnchor.constraint(equalTo: view.topAnchor),
-            collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+            viewCollection.topAnchor.constraint(equalTo: view.topAnchor),
+            viewCollection.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            viewCollection.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            viewCollection.leadingAnchor.constraint(equalTo: view.leadingAnchor)
         ])
+        
+        viewCollection.dataSource = self
+        viewCollection.delegate = self
     }
     
-    private func loadData(){
+    func loadData(){
         Task{
             try await viewModel.loadInitialData()
-            collectionView.reloadData()
+            viewCollection.reloadData()
         }
     }
     
@@ -81,68 +75,77 @@ extension ContactCollectionViewController: UICollectionViewDataSource{
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        if indexPath.item == viewModel.contacts.count{
+        if(indexPath.item == viewModel.contacts.count){
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: LoadingCollectionCell.identifier, for: indexPath) as! LoadingCollectionCell
+            
             cell.start()
             return cell
         }
         
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ContactCollectionCell.identifier, for: indexPath) as! ContactCollectionCell
-        let contact = viewModel.contacts[indexPath.item]
-        cell.configure(with: contact)
+        
+        cell.configure(with: viewModel.contacts[indexPath.item])
         return cell
     }
-    
 }
 
-extension ContactCollectionViewController: UICollectionViewDelegate,UICollectionViewDelegateFlowLayout {
+extension ContactCollectionViewController: UICollectionViewDelegate, UICollectionViewDelegateFlowLayout{
+    
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         
-        let padding: CGFloat = 10
-        let spacing: CGFloat = 10
-        let numColumns: CGFloat = 4
-        
-        // get the collection width
-        let totalContentWidth = collectionView.bounds.width - (padding * 2)
-        
-        if indexPath.item == viewModel.contacts.count {
-            return CGSize(width: totalContentWidth, height: 60)
+        if(indexPath.item == viewModel.contacts.count)
+        {
+            return CGSize(width: collectionView.bounds.width, height: 50)
         }
         
-        let numSpacings: CGFloat = numColumns - 1
-        let itemWidth = floor((totalContentWidth - numSpacings * spacing) / numColumns)
+        let numColums: CGFloat = 3
+        guard let layout = collectionViewLayout as? UICollectionViewFlowLayout else {
+            return .zero
+        }
         
-        return CGSize(width: itemWidth, height: itemWidth + 40)
+        
+        let totalPaddings = layout.sectionInset.left + layout.sectionInset.right
+        let totalSpacings = layout.minimumInteritemSpacing * (numColums - 1)
+        
+        let length = floor((collectionView.bounds.width - (totalPaddings + totalSpacings)) / numColums)
+        
+        return CGSize(width: length, height: length)
     }
+    
     
     func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
         
-        let threshold = viewModel.contacts.count - 4
-        guard indexPath.item == threshold, viewModel.isLoading == .rest else { return }
-        
-        viewModel.setLoadingState(loadingState: .loading)
-        let currentCount = viewModel.contacts.count
-        
-        collectionView.performBatchUpdates {
-            collectionView.insertItems(at: [IndexPath(item: currentCount, section: 0)])
+        let threshold = viewModel.contacts.count - 5
+        guard indexPath.item == threshold && viewModel.isLoading != .loading else{
+            return
         }
         
-        Task {
-            do {
-                let newItems = try await viewModel.loadNextPage()
-                if !newItems.isEmpty {
-                    let loadingPath = IndexPath(item: currentCount, section: 0)
-                    let newPaths = (currentCount..<(currentCount + newItems.count)).map { IndexPath(item: $0, section: 0) }
-                    
-                    collectionView.performBatchUpdates({
-                        collectionView.deleteItems(at: [loadingPath])
-                        viewModel.appendContacts(newItems)
-                        collectionView.insertItems(at: newPaths)
-                    })
+        Task{
+            viewModel.setLoadingState(loadingState: .loading)
+            
+            viewCollection.performBatchUpdates {
+                viewCollection.insertItems(at: [IndexPath(row: viewModel.contacts.count, section: 0)])
+            }
+            do{
+                let newContacts = try await viewModel.loadNextPage()
+
+                if(!newContacts.isEmpty){
+                    let range = viewModel.contacts.count..<(viewModel.contacts.count + newContacts.count)
+                    let pathList = range.map { IndexPath(row: $0, section: 0)}
+                    let loadingPath = IndexPath(row: viewModel.contacts.count, section: 0)
+                    viewCollection.performBatchUpdates {
+                        viewCollection.deleteItems(at: [loadingPath])
+                        viewModel.appendContacts(newContacts)
+                        viewCollection.insertItems(at: pathList)
+                    }
+                } else{
+                    viewModel.resetLoadingState()
                 }
-            } catch {
+                
+            } catch
+            {
                 viewModel.resetLoadingState()
-                print("Error: \(error)")
+                print("Something wrong while fetching Data")
             }
         }
     }

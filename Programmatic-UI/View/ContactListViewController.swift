@@ -89,6 +89,7 @@ extension ContactListViewController: UITableViewDelegate{
                 tableView.insertRows(at: [IndexPath(row: currentCount, section: 0)], with: .none)
             }
             do {
+                
                 let newContacts = try await viewModel.loadNextPage()
                 
                 if !newContacts.isEmpty {
