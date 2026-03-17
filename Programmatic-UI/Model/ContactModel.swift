@@ -10,7 +10,7 @@
 import Foundation
 import Contacts
 
-struct ContactModel: Hashable, Sendable {
+nonisolated struct ContactModel: Hashable, Sendable {
     let id: String
     let name: String
     let initial: String
@@ -34,5 +34,11 @@ extension ContactModel {
         
         self.avatarData = contact.thumbnailImageData
         self.colorIndex = abs(contact.identifier.hashValue)
+    }
+    nonisolated func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
+    nonisolated static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.id == rhs.id
     }
 }
