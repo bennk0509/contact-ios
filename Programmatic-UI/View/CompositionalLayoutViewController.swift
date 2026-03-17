@@ -11,7 +11,6 @@ nonisolated enum Section {
 }
 
 class CompositionalLayoutViewController: UIViewController{
-
     private var viewModel: ContactListViewModel
     //Datasource
     private var dataSource: UICollectionViewDiffableDataSource<Section, ContactModel>!
@@ -26,6 +25,12 @@ class CompositionalLayoutViewController: UIViewController{
         return cv
     }()
     
+    private let searchController: UISearchController = {
+            let sc = UISearchController(searchResultsController: nil)
+            sc.searchBar.placeholder = "Find Contact..."
+            sc.obscuresBackgroundDuringPresentation = false // Giúp cuộn được khi đang search
+            return sc
+        }()
     
     init(viewModel: ContactListViewModel)
     {
@@ -39,6 +44,7 @@ class CompositionalLayoutViewController: UIViewController{
     override func viewDidLoad() {
         super.viewDidLoad()
         setUpUI()
+        setupSearchController()
         configureDataSource()
         loadData()
         collectionView.delegate = self
@@ -48,6 +54,12 @@ class CompositionalLayoutViewController: UIViewController{
             try await viewModel.loadInitialData()
             applySnapshot()
         }
+    }
+    private func setupSearchController() {
+        searchController.searchResultsUpdater = self // Nhận sự kiện khi gõ chữ
+        navigationItem.searchController = searchController
+        navigationItem.hidesSearchBarWhenScrolling = false // Giữ thanh search luôn hiện
+        definesPresentationContext = true
     }
     private func setUpUI(){
         view.addSubview(collectionView)
@@ -77,14 +89,33 @@ class CompositionalLayoutViewController: UIViewController{
         }
     }
     
-    private func applySnapshot(animating: Bool = true){
-        //create snapshot
+//    private func applySnapshot(animating: Bool = true){
+//        //create snapshot
+//        var snapshot = NSDiffableDataSourceSnapshot<Section, ContactModel>()
+//        
+//        //
+//        snapshot.appendSections([.main])
+//        snapshot.appendItems(viewModel.contacts, toSection: .main)
+//        
+//        dataSource.apply(snapshot, animatingDifferences: animating)
+//    }
+    private func applySnapshot(with filter: String? = nil, animating: Bool = true) {
         var snapshot = NSDiffableDataSourceSnapshot<Section, ContactModel>()
-        
-        //
         snapshot.appendSections([.main])
-        snapshot.appendItems(viewModel.contacts, toSection: .main)
         
+        // Lọc dữ liệu dựa trên text người dùng nhập
+        let filteredContacts: [ContactModel]
+        if let query = filter, !query.isEmpty {
+            filteredContacts = viewModel.contacts.filter { contact in
+                // Tìm theo tên hoặc họ (không phân biệt hoa thường)
+                let fullName = "\(contact.name)".lowercased()
+                return fullName.contains(query.lowercased())
+            }
+        } else {
+            filteredContacts = viewModel.contacts
+        }
+        
+        snapshot.appendItems(filteredContacts, toSection: .main)
         dataSource.apply(snapshot, animatingDifferences: animating)
     }
     
@@ -135,5 +166,12 @@ extension CompositionalLayoutViewController: UICollectionViewDelegate{
                 print("Error load more: \(error)")
             }
         }
+    }
+}
+
+extension CompositionalLayoutViewController: UISearchResultsUpdating {
+    func updateSearchResults(for searchController: UISearchController) {
+        let searchText = searchController.searchBar.text
+        applySnapshot(with: searchText, animating: true)
     }
 }
