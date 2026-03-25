@@ -21,18 +21,25 @@ final class ContactListViewModel {
     private(set) var permissionStatus: PermissionStatus = .notDetermined
     private(set) var contacts: [ContactModel] = []
     private(set) var filteredContacts: [ContactModel] = []
+    private(set) var groupedContacts: [(letter: String, contacts: [ContactModel])] = []
+    private(set) var groupedFilteredContacts: [(letter: String, contacts: [ContactModel])] = []
     private(set) var isLoading: LoadingState = .rest
 
     private var contactIDs: [String] = []
-    
+
     private var searchTask: Task<Void,Never>?
 
-    /// Constructor HERE
     init(repository: ContactRepository) {
         self.repository = repository
     }
 
-    /// FUNC HERE
+    private func group(_ source: [ContactModel]) -> [(letter: String, contacts: [ContactModel])] {
+        let dict = Dictionary(grouping: source) {
+            String($0.name.prefix(1)).uppercased()
+        }
+        return dict.keys.sorted().map { (letter: $0, contacts: dict[$0]!) }
+    }
+
     func loadInitialData() async throws {
         let status = ContactPermissionManager.shared.currentStatus
         permissionStatus = status
@@ -67,6 +74,7 @@ final class ContactListViewModel {
 
             let firstPageIDs = Array(contactIDs.prefix(50))
             contacts = try await repository.getContacts(for: firstPageIDs)
+            groupedContacts = group(contacts)
             isLoading = .rest
         } catch {
             isLoading = .error
@@ -85,6 +93,7 @@ final class ContactListViewModel {
             try await Task.sleep(nanoseconds: 3_000_000_000)
             let result = try await repository.getContacts(for: nextIDs)
             contacts.append(contentsOf: result)
+            groupedContacts = group(contacts)
             isLoading = .rest
         } catch {
             isLoading = .error
@@ -117,14 +126,18 @@ final class ContactListViewModel {
         searchTask = Task {
             guard !query.isEmpty else {
                 filteredContacts = contacts
+                completed = true
                 return
             }
             let result = await repository.searchContacts(query: query)
-            if(Task.isCancelled) {return}
+            if Task.isCancelled { return }
             filteredContacts = result
             completed = true
         }
         await searchTask?.value
+        if completed {
+            groupedFilteredContacts = group(filteredContacts)
+        }
         return completed
     }
 }

@@ -42,8 +42,10 @@ actor ContactRepositoryImpl: ContactRepository{
 
         let data = try await contactService.fetchAllContacts()
         let models = data.map { ContactModel(from: $0) }
+            .sorted { $0.name.lowercased() < $1.name.lowercased()}
+        
         self.contactsById = Dictionary(uniqueKeysWithValues: models.map { ($0.id, $0) })
-        self.orderedIds = models.map { $0.id }
+          self.orderedIds = models.map { $0.id }
         
         return models
     }

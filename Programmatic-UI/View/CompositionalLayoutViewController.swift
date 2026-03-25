@@ -6,8 +6,8 @@
 //
 import UIKit
 
-nonisolated enum Section {
-    case main
+nonisolated enum Section: Hashable {
+    case letter(String)
 }
 
 class CompositionalLayoutViewController: UIViewController{
@@ -21,6 +21,7 @@ class CompositionalLayoutViewController: UIViewController{
         cv.backgroundColor = .systemBackground
         
         cv.register(ContactCollectionCell.self, forCellWithReuseIdentifier: ContactCollectionCell.identifier)
+        cv.register(SectionHeaderView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: SectionHeaderView.identifier)
         cv.register(LoadingFooterView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionFooter, withReuseIdentifier: LoadingFooterView.identifier)
         return cv
     }()
@@ -54,7 +55,7 @@ class CompositionalLayoutViewController: UIViewController{
         Task{
             do{
                 try await viewModel.loadInitialData()
-                applySnapshot(with: viewModel.contacts)
+                applySnapshot(with: viewModel.groupedContacts)
             } catch{
                 print("Failed to load contacts: \(error)")
             }
@@ -83,6 +84,14 @@ class CompositionalLayoutViewController: UIViewController{
             return cell
         })
         dataSource.supplementaryViewProvider = { [weak self] collectionView, kind, indexPath in
+            if kind == UICollectionView.elementKindSectionHeader {
+                let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: SectionHeaderView.identifier, for: indexPath) as? SectionHeaderView
+                let section = self?.dataSource.snapshot().sectionIdentifiers[indexPath.section]
+                if case .letter(let letter) = section {
+                    header?.configure(with: letter)
+                }
+                return header
+            }
             guard kind == UICollectionView.elementKindSectionFooter else { return nil }
             let footer = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: LoadingFooterView.identifier, for: indexPath) as? LoadingFooterView
             if self?.viewModel.isLoading == .loading {
@@ -94,35 +103,40 @@ class CompositionalLayoutViewController: UIViewController{
         }
     }
     
-    private func applySnapshot(with contacts: [ContactModel], animating: Bool = true) {
-        var snapshot = NSDiffableDataSourceSnapshot<Section,ContactModel>()
-        snapshot.appendSections([.main])
-        snapshot.appendItems(contacts, toSection: .main)
+    private func applySnapshot(with groups: [(letter: String, contacts: [ContactModel])], animating: Bool = true) {
+        var snapshot = NSDiffableDataSourceSnapshot<Section, ContactModel>()
+        for group in groups {
+            let section = Section.letter(group.letter)
+            snapshot.appendSections([section])
+            snapshot.appendItems(group.contacts, toSection: section)
+        }
         Task {
             await dataSource.apply(snapshot, animatingDifferences: animating)
         }
     }
     
-    private func createLayout() -> UICollectionViewLayout{
+    private func createLayout() -> UICollectionViewLayout {
         let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .absolute(70))
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
-        
+
         let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .absolute(70))
         let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
-        
+
         let section = NSCollectionLayoutSection(group: group)
-        
+
+        let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(44))
+        let header = NSCollectionLayoutBoundarySupplementaryItem(layoutSize: headerSize, elementKind: UICollectionView.elementKindSectionHeader, alignment: .top)
+        section.boundarySupplementaryItems = [header]
+        section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16)
+        section.interGroupSpacing = 0
+
+        // one global footer at the very bottom — like Apple Contacts
         let footerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(70))
-        
-        let footer = NSCollectionLayoutBoundarySupplementaryItem(layoutSize: footerSize, elementKind: UICollectionView.elementKindSectionFooter, alignment: .bottom)
-        
-        section.boundarySupplementaryItems = [footer]
-        //padding
-        section.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 10, bottom: 10, trailing: 10)
-        //spacing between group
-        section.interGroupSpacing = 10
-    
-        return UICollectionViewCompositionalLayout(section: section)
+        let globalFooter = NSCollectionLayoutBoundarySupplementaryItem(layoutSize: footerSize, elementKind: UICollectionView.elementKindSectionFooter, alignment: .bottom)
+        let config = UICollectionViewCompositionalLayoutConfiguration()
+        config.boundarySupplementaryItems = [globalFooter]
+
+        return UICollectionViewCompositionalLayout(section: section, configuration: config)
     }
 }
 
@@ -139,7 +153,7 @@ extension CompositionalLayoutViewController: UICollectionViewDelegate{
         Task{
             do{
                 try await viewModel.loadNextPage()
-                applySnapshot(with: viewModel.contacts)
+                applySnapshot(with: viewModel.groupedContacts)
             } catch{
                 print("Eror load more: \(error)")
             }
@@ -154,8 +168,8 @@ extension CompositionalLayoutViewController: UISearchResultsUpdating {
             let completed = await viewModel.search(query: text)
             if(completed)
             {
-                print("Apply Snapshot")
-                applySnapshot(with: viewModel.filteredContacts)
+//                print("Apply Snapshot")
+                applySnapshot(with: viewModel.groupedFilteredContacts)
             }
         }
     }
