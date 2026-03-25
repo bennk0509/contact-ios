@@ -111,12 +111,8 @@ final class ContactListViewModel {
 //        }
 //    }
 
-    func appendContacts(_ newContacts: [ContactModel]) {
-        contacts.append(contentsOf: newContacts)
-        isLoading = .rest
-    }
-
-    func search(query: String) async {
+    func search(query: String) async -> Bool {
+        var completed = false
         searchTask?.cancel()
         searchTask = Task {
             guard !query.isEmpty else {
@@ -126,7 +122,9 @@ final class ContactListViewModel {
             let result = await repository.searchContacts(query: query)
             if(Task.isCancelled) {return}
             filteredContacts = result
+            completed = true
         }
         await searchTask?.value
+        return completed
     }
 }

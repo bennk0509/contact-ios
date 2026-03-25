@@ -151,8 +151,12 @@ extension CompositionalLayoutViewController: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
         let text = searchController.searchBar.text ?? ""
         Task {
-            await viewModel.search(query: text)
-            applySnapshot(with: viewModel.filteredContacts)
+            let completed = await viewModel.search(query: text)
+            if(completed)
+            {
+                print("Apply Snapshot")
+                applySnapshot(with: viewModel.filteredContacts)
+            }
         }
     }
 }
