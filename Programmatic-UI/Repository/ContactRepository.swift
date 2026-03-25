@@ -13,6 +13,7 @@ protocol ContactRepository{
     func fetchContactById(id: String) async throws -> ContactModel
     func getOrderIds() async throws -> [String]
     func getContacts(for ids: [String]) async throws -> [ContactModel]
+    func searchContacts(query: String) async -> [ContactModel]
 }
 
 actor ContactRepositoryImpl: ContactRepository{
@@ -25,7 +26,14 @@ actor ContactRepositoryImpl: ContactRepository{
     private var contactsById: [String: ContactModel] = [:]
     private var orderedIds: [String] = []
 
-    
+    func searchContacts(query: String) async -> [ContactModel] {
+        try? await Task.sleep(nanoseconds: 5_000_000_000)
+        let lowerQuery = query.lowercased()
+        //reader writer lock
+        return contactsById.values.filter { contact in
+            contact.name.lowercased().contains(lowerQuery)
+        }
+    }
     func fetchAllContacts() async throws -> [ContactModel] {
         if(!orderedIds.isEmpty)
         {
@@ -64,42 +72,3 @@ actor ContactRepositoryImpl: ContactRepository{
         return ids.compactMap { contactsById[$0]}
     }
 }
-//    
-//    func fetchContact(id: String) async throws -> ContactModel {
-//        
-//        if let contact = contactsByID[id]
-//        {
-//            return contact
-//        }
-//        
-//        if let cached = await contactCache[id]{
-//            switch cached{
-//            case .inprogress(let task):
-//                return try await task.value
-//            case .ready(let contact):
-//                return contact
-//            }
-//        }
-//        
-//        let task = Task<ContactModel, Error>{
-//            let data = try await contactService.fetchContactById(by: id)
-//            let contact = await ContactModel(from: data)
-//            return contact
-//        }
-//        
-//        do{
-//            contactCache[id] = .inprogress(task)
-//            let contact = try await task.value
-//            contactCache[id] = .ready(contact)
-//            
-//            contactsByID[id] = contact
-//            orderedIDs.append(id)
-//            
-//            return contact
-//        } catch{
-//            
-//            contactCache[id] = nil
-//            throw error
-//        }
-//    }
-//}

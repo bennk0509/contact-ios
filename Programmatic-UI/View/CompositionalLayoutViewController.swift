@@ -28,7 +28,7 @@ class CompositionalLayoutViewController: UIViewController{
     private let searchController: UISearchController = {
             let sc = UISearchController(searchResultsController: nil)
             sc.searchBar.placeholder = "Find Contact..."
-            sc.obscuresBackgroundDuringPresentation = false // Giúp cuộn được khi đang search
+            sc.obscuresBackgroundDuringPresentation = false
             return sc
         }()
     
@@ -49,16 +49,21 @@ class CompositionalLayoutViewController: UIViewController{
         loadData()
         collectionView.delegate = self
     }
+    
     private func loadData(){
         Task{
-            try await viewModel.loadInitialData()
-            applySnapshot()
+            do{
+                try await viewModel.loadInitialData()
+                applySnapshot(with: viewModel.contacts)
+            } catch{
+                print("Failed to load contacts: \(error)")
+            }
         }
     }
     private func setupSearchController() {
-        searchController.searchResultsUpdater = self // Nhận sự kiện khi gõ chữ
+        searchController.searchResultsUpdater = self
         navigationItem.searchController = searchController
-        navigationItem.hidesSearchBarWhenScrolling = false // Giữ thanh search luôn hiện
+        navigationItem.hidesSearchBarWhenScrolling = false
         definesPresentationContext = true
     }
     private func setUpUI(){
@@ -89,34 +94,13 @@ class CompositionalLayoutViewController: UIViewController{
         }
     }
     
-//    private func applySnapshot(animating: Bool = true){
-//        //create snapshot
-//        var snapshot = NSDiffableDataSourceSnapshot<Section, ContactModel>()
-//        
-//        //
-//        snapshot.appendSections([.main])
-//        snapshot.appendItems(viewModel.contacts, toSection: .main)
-//        
-//        dataSource.apply(snapshot, animatingDifferences: animating)
-//    }
-    private func applySnapshot(with filter: String? = nil, animating: Bool = true) {
-        var snapshot = NSDiffableDataSourceSnapshot<Section, ContactModel>()
+    private func applySnapshot(with contacts: [ContactModel], animating: Bool = true) {
+        var snapshot = NSDiffableDataSourceSnapshot<Section,ContactModel>()
         snapshot.appendSections([.main])
-        
-        // Lọc dữ liệu dựa trên text người dùng nhập
-        let filteredContacts: [ContactModel]
-        if let query = filter, !query.isEmpty {
-            filteredContacts = viewModel.contacts.filter { contact in
-                // Tìm theo tên hoặc họ (không phân biệt hoa thường)
-                let fullName = "\(contact.name)".lowercased()
-                return fullName.contains(query.lowercased())
-            }
-        } else {
-            filteredContacts = viewModel.contacts
+        snapshot.appendItems(contacts, toSection: .main)
+        Task {
+            await dataSource.apply(snapshot, animatingDifferences: animating)
         }
-        
-        snapshot.appendItems(filteredContacts, toSection: .main)
-        dataSource.apply(snapshot, animatingDifferences: animating)
     }
     
     private func createLayout() -> UICollectionViewLayout{
@@ -150,20 +134,14 @@ extension CompositionalLayoutViewController: UICollectionViewDelegate{
         let frameHeight = scrollView.frame.size.height
         
         guard position > (contentHeight - frameHeight - 100),
-              viewModel.isLoading == .rest else { return }
-
-        Task {
-            viewModel.setLoadingState(loadingState: .loading)
-            applySnapshot()
-            do {
-                let newContacts = try await viewModel.loadNextPage()
-                if !newContacts.isEmpty {
-                    viewModel.appendContacts(newContacts)
-                }
-                applySnapshot(animating: true)
-            } catch {
-                viewModel.resetLoadingState()
-                print("Error load more: \(error)")
+              viewModel.isLoading == .rest,
+              searchController.searchBar.text?.isEmpty ?? true else { return }
+        Task{
+            do{
+                try await viewModel.loadNextPage()
+                applySnapshot(with: viewModel.contacts)
+            } catch{
+                print("Eror load more: \(error)")
             }
         }
     }
@@ -171,7 +149,10 @@ extension CompositionalLayoutViewController: UICollectionViewDelegate{
 
 extension CompositionalLayoutViewController: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
-        let searchText = searchController.searchBar.text
-        applySnapshot(with: searchText, animating: true)
+        let text = searchController.searchBar.text ?? ""
+        Task {
+            await viewModel.search(query: text)
+            applySnapshot(with: viewModel.filteredContacts)
+        }
     }
 }
