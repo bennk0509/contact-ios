@@ -1,0 +1,56 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "FILE=$(echo $CLAUDE_TOOL_INPUT | jq -r '.file_path // empty'); if echo \"$FILE\" | grep -q '\\.swift$'; then swiftformat \"$FILE\" 2>/dev/null; fi",
+            "statusMessage": "Formatting Swift file..."
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "FILE=$(echo $CLAUDE_TOOL_INPUT | jq -r '.file_path // empty'); if echo \"$FILE\" | grep -qE '\\.(storyboard|xib)$'; then echo 'No storyboards or XIBs allowed in this project' >&2; exit 2; fi"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "CMD=$(echo $CLAUDE_TOOL_INPUT | jq -r '.command // empty'); if echo \"$CMD\" | grep -qE 'git push.*(main|master)'; then echo 'Direct push to main is not allowed. Create a branch first.' >&2; exit 2; fi"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "INPUT=$(cat); if [ \"$(echo $INPUT | jq -r '.stop_hook_active')\" = 'true' ]; then exit 0; fi; cd $(git rev-parse --show-toplevel) && xcodebuild test -scheme Programmatic-UI -destination 'platform=iOS Simulator,name=iPhone 16' -quiet 2>&1 | tail -5"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo \"Branch: $(git branch --show-current) | Last commit: $(git log -1 --format='%s')\" >&2"
+          }
+        ]
+      }
+    ]
+  }
+}
